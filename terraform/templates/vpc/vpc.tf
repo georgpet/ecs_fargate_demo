@@ -22,3 +22,4 @@ module "vpc" {
   single_nat_gateway           = "${var.single_nat_gateway}"
   tags                         = "${var.tags}"
 }
+

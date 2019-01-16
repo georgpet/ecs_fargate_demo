@@ -28,7 +28,12 @@ output "this_alb_target_group_arn" {
   value       = "${module.alb.target_group_arn}"
 }
 
+output "this_alb_https_listener_arns" {
+  description = "ARN of the target group. "
+  value       = "${module.alb.alb_listener_https_arn}"
+}
+
 output "full_url" {
   description = "Full URL of the environment"
-  value       = "https://${aws_route53_record.a.fqdn}"
+  value       = "${aws_route53_record.a.fqdn}"
 }

@@ -1,16 +1,16 @@
 module "vpc" {
   source = "../templates/vpc"
 
-  aws_region = "eu-west-1"
+  aws_region = "${var.region}"
 
   global_project = ""
 
-  local_environment = ""
+  local_environment = "${var.environment}"
 
   global_name = ""
   # vpc
 
-  vpc_name = "ECS-demo-VPC-dev"
+  vpc_name = "ECS-demo-VPC-${var.environment}"
   cidr     = "10.202.0.0/20"
 
   # Netmask 255.255.240.0

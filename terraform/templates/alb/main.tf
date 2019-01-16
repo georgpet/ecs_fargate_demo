@@ -64,11 +64,11 @@ module "alb" {
   backend_port             = "${var.backend_port}"
   health_check_path        = "${var.health_check_path}"
   log_bucket_name          = "${var.logs_s3_bucket_id}"
-  log_location_prefix      = "alb"
+  log_location_prefix      = ""
   alb_protocols            = ["${var.alb_protocols}"]
   force_destroy_log_bucket = false
   create_log_bucket        = false
-  enable_logging           = true
+  enable_logging           = false
 
   deregistration_delay = "${var.deregistration_delay}"
 

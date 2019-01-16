@@ -94,4 +94,5 @@ variable "direct_connect_cidr_block" {
 
 variable "logs_s3_bucket_id" {
   description = "The name of logs bucket"
+  default = ""
 }
