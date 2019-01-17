@@ -1,4 +1,8 @@
-module "service2" {
+output "ecs-service-URL" {
+  value = "${module.service.ecs-service-URL}"
+}
+
+module "service" {
   source = "../templates/ecs-service-fargate"
 
   service_name = "demo-service-2"
@@ -23,7 +27,7 @@ module "service2" {
 
   alb_arn = "${module.alb-public.this_alb_arn}"
 
-  #alb_arn_suffix = "${module.alb-public.this_alb_arn_suffix}"
+  alb_arn_suffix = "${module.alb-public.this_alb_arn_suffix}"
 
   https_listener_arn = "${module.alb-public.this_alb_https_listener_arns}"
 
@@ -35,6 +39,9 @@ module "service2" {
   alb_fqdn = "${module.alb-public.full_url}"
 
   ecs_execution_role_arn = "${module.ecs_cluster.ecs_execution_role_arn}"
-  
+
+  ecs_cluster_log_group_name = "${module.ecs_cluster.ecs_cluster_log_group_name}"
+
+  region = "${var.region}"
 
 }

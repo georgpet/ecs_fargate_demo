@@ -2,6 +2,10 @@ variable "service_name" {
   description = "NEO service name"
 }
 
+variable "region" {
+  description = "AWS region to use for all resources"
+}
+
 variable "ecs_cluster_name" {
   description = "NEO service cluster name"
 }
@@ -38,10 +42,10 @@ variable "security_groups" {
 variable "alb_arn" {
   description = "Application loadbalancer ARN."
 }
-/*
+
 variable "alb_arn_suffix" {
   description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
-}*/
+}
 
 variable "https_listener_arn" {
   description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
@@ -69,4 +73,8 @@ variable "route53_zone_name" {
 
 variable "ecs_execution_role_arn" {
   description = "ECS execution role arn for fargate tasks"
+}
+
+variable "ecs_cluster_log_group_name" {
+  description = "ECS cluster log group name for fargate tasks"
 }

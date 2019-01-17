@@ -40,6 +40,14 @@ resource "aws_ecs_task_definition" "ecs-service" {
             "cpu": 256,
             "memory": 512,
             "networkMode": "awsvpc",
+            "logConfiguration": {
+              "logDriver": "awslogs",
+              "options": {
+                "awslogs-group": "${var.ecs_cluster_log_group_name}",
+                "awslogs-region": "${var.region}",
+                "awslogs-stream-prefix": "${var.service_name}"
+              }
+            },
             "portMappings": [
                 {
                     "containerPort": 80,
@@ -158,7 +166,7 @@ resource "aws_route53_record" "service_cname_record" {
 resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
   alarm_name          = "${var.service_name}_high_count"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "2"
+  evaluation_periods  = "1"
   metric_name         = "RequestCountPerTarget"
   namespace           = "AWS/ApplicationELB"
   period              = "60"
@@ -180,7 +188,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
 resource "aws_cloudwatch_metric_alarm" "ecs-service_low_count" {
   alarm_name          = "${var.service_name}_low_count"
   comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = "2"
+  evaluation_periods  = "1"
   metric_name         = "RequestCountPerTarget"
   namespace           = "AWS/ApplicationELB"
   period              = "60"
@@ -257,4 +265,72 @@ resource "aws_appautoscaling_policy" "down" {
   depends_on = [
     "aws_appautoscaling_target.main",
   ]
+}
+
+resource "aws_cloudwatch_dashboard" "service_dashboard" {
+  dashboard_name = "${var.ecs_cluster_name}-${var.service_name}-dashboard"
+
+  dashboard_body = <<EOF
+{
+    "widgets": [
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 0,
+            "width": 21,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApplicationELB", "HealthyHostCount", "TargetGroup", "${aws_alb_target_group.ecs-target-group.arn_suffix}", "LoadBalancer", "${var.alb_arn_suffix}", { "stat": "Average", "period": 60 } ],
+                    [ ".", "RequestCountPerTarget", ".", ".", ".", ".", { "period": 60, "stat": "Sum", "visible": false } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${var.region}",
+                "yAxis": {
+                    "left": {
+                        "min": 0
+                    },
+                    "right": {
+                        "min": 0
+                    }
+                },
+                "title": "Healthy host count"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 6,
+            "width": 21,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApplicationELB", "RequestCount", "TargetGroup", "${aws_alb_target_group.ecs-target-group.arn_suffix}", "LoadBalancer", "${var.alb_arn_suffix}", { "stat": "Sum", "period": 60 } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "eu-west-1",
+                "period": 300
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 12,
+            "width": 21,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApplicationELB", "RequestCountPerTarget", "TargetGroup", "${aws_alb_target_group.ecs-target-group.arn_suffix}", { "stat": "Sum", "period": 60 } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "eu-west-1",
+                "title": "Request count per target"
+            }
+        }
+    ]
+}
+ EOF
 }

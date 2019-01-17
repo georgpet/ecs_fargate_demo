@@ -17,3 +17,8 @@ output "ecs_execution_role_arn" {
   description = "ECS execution role arn for fargate tasks"
   value       = "${aws_iam_role.ecs_execution_role.arn}"
 }
+
+output "ecs_cluster_log_group_name" {
+  description = "ECS cluster log group name for fargate tasks"
+  value       = "${aws_cloudwatch_log_group.cluster_log_group.name}"
+}
