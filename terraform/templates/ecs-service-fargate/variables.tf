@@ -43,7 +43,11 @@ variable "alb_arn_suffix" {
   description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
 }*/
 
-variable "listener_arn" {
+variable "https_listener_arn" {
+  description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
+}
+
+variable "http_listener_arn" {
   description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
 }
 /*
@@ -63,3 +67,6 @@ variable "route53_zone_name" {
   description = "Route53 zone name to assign to this service"
 }
 
+variable "ecs_execution_role_arn" {
+  description = "ECS execution role arn for fargate tasks"
+}

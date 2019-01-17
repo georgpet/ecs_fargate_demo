@@ -1,8 +1,6 @@
 resource "aws_ecs_service" "ecs-service" {
   	name            = "${var.service_name}"
-  	#iam_role        = "${aws_iam_role.ecs-service-role.name}"
   	cluster         = "${var.ecs_cluster_id}"
-  	#task_definition = "${aws_ecs_task_definition.ecs-service.family}:${max("${aws_ecs_task_definition.ecs-service.revision}", "${data.aws_ecs_task_definition.ecs-service.revision}")}"
   	task_definition = "${aws_ecs_task_definition.ecs-service.arn}"
   	desired_count   = 1
 	  health_check_grace_period_seconds = 60
@@ -28,16 +26,41 @@ resource "aws_ecs_service" "ecs-service" {
     #depends_on = ["aws_iam_role.ecs-service-role","aws_alb_listener.alb-listener"]
 }
 
-/*data "aws_ecs_task_definition" "ecs-service" {
-  task_definition = "${aws_ecs_task_definition.ecs-service.family}"
 
-  depends_on = [ "aws_ecs_task_definition.ecs-service" ]
-}
-*/
 
 resource "aws_ecs_task_definition" "ecs-service" {
     family                = "${var.service_name}"
-    container_definitions = "${file("${var.container_definiton_json_file}")}"  
+    #container_definitions = "${file("${var.container_definiton_json_file}")}"  
+
+    container_definitions = <<DEFINITION
+[
+  {
+            "name": "ecs_demo_task",
+            "image": "511726569835.dkr.ecr.eu-west-1.amazonaws.com/ecs_demo_task:0.1",
+            "cpu": 256,
+            "memory": 512,
+            "networkMode": "awsvpc",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80
+                }
+            ],
+            "environment": [
+                {
+                  "name": "cluster_name",
+                  "value": "${var.ecs_cluster_name}"
+                },
+                {
+                  "name": "service_name",
+                  "value": "${var.service_name}"
+                }
+            ],
+            
+            "essential": true
+        }
+]
+DEFINITION
 
     requires_compatibilities = ["FARGATE"]
     network_mode             = "awsvpc"
@@ -45,57 +68,16 @@ resource "aws_ecs_task_definition" "ecs-service" {
     memory                   = 512
     
     
-    execution_role_arn       = "${aws_iam_role.ecs_execution_role.arn}"
-    task_role_arn            = "${aws_iam_role.ecs_execution_role.arn}"
+    execution_role_arn       = "${var.ecs_execution_role_arn}"
+    task_role_arn            = "${var.ecs_execution_role_arn}"
     
 }
 
-resource "aws_iam_role" "ecs_execution_role" {
-  name               = "ecs_task_execution_role"
-  #assume_role_policy = "${file("ecs-task-execution-role.json")}"
-
-  assume_role_policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ecs-tasks.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
-      }
-    ]
+#workaround for terraform not resolving dependencies between modules
+resource "null_resource" "alb_exists" {
+  triggers {
+    alb_name = "${var.alb_arn}"
   }
-
-  EOF
-}
-
-resource "aws_iam_role_policy" "ecs_execution_role_policy" {
-  name   = "ecs_execution_role_policy"
-  #policy = "${file("ecs-execution-role-policy.json")}"
-  role   = "${aws_iam_role.ecs_execution_role.id}"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        "Resource": "*"
-      }
-    ]
-}
-EOF
 }
 
 resource "aws_alb_target_group" "ecs-target-group" {
@@ -121,23 +103,31 @@ resource "aws_alb_target_group" "ecs-target-group" {
     tags {
       Name = "${var.service_name}-target-group"
     }
-}
 
-resource "aws_alb_listener" "alb-listener" {
-    load_balancer_arn = "${var.alb_arn}"
-    port              = "${var.container_port}"
-    protocol          = "HTTP"
-
-    default_action {
-        target_group_arn = "${aws_alb_target_group.ecs-target-group.arn}"
-        type             = "forward"
-    }
+   #workaround for terraform not resolving dependencies between modules
+   depends_on = ["null_resource.alb_exists"]
 }
 
 
-resource "aws_lb_listener_rule" "host_based_routing" {
-  listener_arn = "${var.listener_arn}"
-  priority     = 99
+
+resource "aws_lb_listener_rule" "host_based_routing_https" {
+  listener_arn = "${var.https_listener_arn}"
+  #priority     = 99
+
+  action {
+    type             = "forward"
+    target_group_arn = "${aws_alb_target_group.ecs-target-group.arn}"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.service_name}-${var.environment}.tietoaws.com"]
+  }
+}
+
+resource "aws_lb_listener_rule" "host_based_routing_http" {
+  listener_arn = "${var.http_listener_arn}"
+  #priority     = 99
 
   action {
     type             = "forward"
@@ -164,29 +154,7 @@ resource "aws_route53_record" "service_cname_record" {
 
   records        = ["${var.alb_fqdn}"]
 }
-/*
-resource "aws_iam_role" "ecs-service-role" {
-    name                = "ecs-service-role"
-    path                = "/"
-    assume_role_policy  = "${data.aws_iam_policy_document.ecs-service-policy.json}"
-}
 
-resource "aws_iam_role_policy_attachment" "ecs-service-role-attachment" {
-    role       = "${aws_iam_role.ecs-service-role.name}"
-    policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
-}
-
-data "aws_iam_policy_document" "ecs-service-policy" {
-    statement {
-        actions = ["sts:AssumeRole"]
-
-        principals {
-            type        = "Service"
-            identifiers = ["ecs.amazonaws.com"]
-        }
-    }
-}
-*/
 resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
   alarm_name          = "${var.service_name}_high_count"
   comparison_operator = "GreaterThanOrEqualToThreshold"

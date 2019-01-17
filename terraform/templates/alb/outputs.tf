@@ -29,8 +29,13 @@ output "this_alb_target_group_arn" {
 }
 
 output "this_alb_https_listener_arns" {
-  description = "ARN of the target group. "
+  description = "HTTPS ALB listener ARN of the target group. "
   value       = "${module.alb.alb_listener_https_arn}"
+}
+
+output "this_alb_http_listener_arns" {
+  description = "HTTP ALB listener ARN of the target group. "
+  value       = "${module.alb.alb_listener_http_arn}"
 }
 
 output "full_url" {
