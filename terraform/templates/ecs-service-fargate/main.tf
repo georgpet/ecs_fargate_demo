@@ -36,8 +36,8 @@ resource "aws_ecs_task_definition" "ecs-service" {
   {
             "name": "${var.container_name}",
             "image": "${var.container_image}",
-            "cpu": "${var.cpu_reservation}",
-            "memory": "${var.memory_reservation}",
+            "cpu": ${var.cpu_reservation},
+            "memory": ${var.memory_reservation},
             "networkMode": "awsvpc",
             "logConfiguration": {
               "logDriver": "awslogs",
