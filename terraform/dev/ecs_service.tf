@@ -8,7 +8,7 @@ output "ecs-service-HTTPS-URL" {
 module "service" {
   source = "../templates/ecs-service-fargate"
 
-  service_name = "demo-service-2"
+  service_name = "demo-service-1"
 
   ecs_cluster_name = "${module.ecs_cluster.ecs_cluster_name}"
   
