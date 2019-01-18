@@ -28,7 +28,7 @@ resource "aws_ecs_service" "ecs-service" {
 
 
 resource "aws_ecs_task_definition" "ecs-service" {
-    family                = "${var.service_name}"
+    family                = "${var.ecs_cluster_name}-${var.service_name}"
     #container_definitions = "${file("${var.container_definiton_json_file}")}"  
 
     container_definitions = <<DEFINITION
@@ -88,7 +88,7 @@ resource "null_resource" "alb_exists" {
 }
 
 resource "aws_alb_target_group" "ecs-target-group" {
-    name                = "${var.service_name}-target-group"
+    name                = "${var.ecs_cluster_name}-${var.service_name}-tg"
     port                = "${var.container_port}"
     protocol            = "HTTP"
     vpc_id              = "${var.vpc_id}"
@@ -160,7 +160,7 @@ resource "aws_route53_record" "service_cname_record" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
-  alarm_name          = "${var.service_name}_high_count"
+  alarm_name          = "${var.ecs_cluster_name}-${var.service_name}_high_count"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
   metric_name         = "RequestCountPerTarget"
@@ -182,7 +182,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs-service_low_count" {
-  alarm_name          = "${var.service_name}_low_count"
+  alarm_name          = "${var.ecs_cluster_name}-${var.service_name}_low_count"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "1"
   metric_name         = "RequestCountPerTarget"

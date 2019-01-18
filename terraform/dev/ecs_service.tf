@@ -1,11 +1,11 @@
-output "ecs-service-HTTP-URL" {
-  value = "http://${module.service.ecs-service-URL}"
+output "ecs-service-1-HTTP-URL" {
+  value = "http://${module.service-1.ecs-service-URL}"
 }
-output "ecs-service-HTTPS-URL" {
-  value = "https://${module.service.ecs-service-URL}"
+output "ecs-service-1-HTTPS-URL" {
+  value = "https://${module.service-1.ecs-service-URL}"
 }
 
-module "service" {
+module "service-1" {
   source = "../templates/ecs-service-fargate"
 
   service_name = "demo-service-1"
