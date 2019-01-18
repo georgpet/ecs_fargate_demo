@@ -2,7 +2,7 @@ resource "aws_ecs_service" "ecs-service" {
   	name            = "${var.service_name}"
   	cluster         = "${var.ecs_cluster_id}"
   	task_definition = "${aws_ecs_task_definition.ecs-service.arn}"
-  	desired_count   = 1
+  	desired_count   = "${var.task_desired_count}"
 	  health_check_grace_period_seconds = 60
     launch_type     = "FARGATE"
 
@@ -23,7 +23,6 @@ resource "aws_ecs_service" "ecs-service" {
       ignore_changes = ["desired_count"]
     }
 
-    #depends_on = ["aws_iam_role.ecs-service-role","aws_alb_listener.alb-listener"]
 }
 
 
@@ -35,10 +34,10 @@ resource "aws_ecs_task_definition" "ecs-service" {
     container_definitions = <<DEFINITION
 [
   {
-            "name": "ecs_demo_task",
-            "image": "511726569835.dkr.ecr.eu-west-1.amazonaws.com/ecs_demo_task:0.1",
-            "cpu": 256,
-            "memory": 512,
+            "name": "${var.container_name}",
+            "image": "${var.container_image}",
+            "cpu": "${var.cpu_reservation}",
+            "memory": "${var.memory_reservation}",
             "networkMode": "awsvpc",
             "logConfiguration": {
               "logDriver": "awslogs",
@@ -50,8 +49,8 @@ resource "aws_ecs_task_definition" "ecs-service" {
             },
             "portMappings": [
                 {
-                    "containerPort": 80,
-                    "hostPort": 80
+                    "containerPort": ${var.container_port},
+                    "hostPort": ${var.container_port}
                 }
             ],
             "environment": [
@@ -72,8 +71,8 @@ DEFINITION
 
     requires_compatibilities = ["FARGATE"]
     network_mode             = "awsvpc"
-    cpu                      = 256
-    memory                   = 512
+    cpu                      = "${var.cpu_reservation}"
+    memory                   = "${var.memory_reservation}"
     
     
     execution_role_arn       = "${var.ecs_execution_role_arn}"
@@ -120,7 +119,6 @@ resource "aws_alb_target_group" "ecs-target-group" {
 
 resource "aws_lb_listener_rule" "host_based_routing_https" {
   listener_arn = "${var.https_listener_arn}"
-  #priority     = 99
 
   action {
     type             = "forward"
@@ -135,7 +133,6 @@ resource "aws_lb_listener_rule" "host_based_routing_https" {
 
 resource "aws_lb_listener_rule" "host_based_routing_http" {
   listener_arn = "${var.http_listener_arn}"
-  #priority     = 99
 
   action {
     type             = "forward"
@@ -154,7 +151,6 @@ data "aws_route53_zone" "this" {
 
 resource "aws_route53_record" "service_cname_record" {
   zone_id = "${data.aws_route53_zone.this.zone_id}"
-  #zone_id = "Z3U5LRYJ1JHAQ3"
   
   name    = "${var.service_name}-${var.environment}.tietoaws.com."
   type    = "CNAME"
@@ -215,8 +211,8 @@ resource "aws_appautoscaling_target" "main" {
   service_namespace  = "ecs"
   resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.ecs-service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
-  min_capacity       = "1"
-  max_capacity       = "10"
+  min_capacity       = "${var.task_min_count}"
+  max_capacity       = "${var.task_max_count}"
 
   depends_on = [
     "aws_ecs_service.ecs-service",
@@ -267,6 +263,7 @@ resource "aws_appautoscaling_policy" "down" {
   ]
 }
 
+# CloudWatch Service Dashboard
 resource "aws_cloudwatch_dashboard" "service_dashboard" {
   dashboard_name = "${var.ecs_cluster_name}-${var.service_name}-dashboard"
 

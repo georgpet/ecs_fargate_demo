@@ -1,5 +1,8 @@
-output "ecs-service-URL" {
-  value = "${module.service.ecs-service-URL}"
+output "ecs-service-HTTP-URL" {
+  value = "http://${module.service.ecs-service-URL}"
+}
+output "ecs-service-HTTPS-URL" {
+  value = "https://${module.service.ecs-service-URL}"
 }
 
 module "service" {
@@ -13,7 +16,7 @@ module "service" {
 
   environment = "${var.environment}"
 
-  container_definiton_json_file = "ecs_demo_task.json"
+  container_image = "511726569835.dkr.ecr.eu-west-1.amazonaws.com/ecs_demo_task:0.1"
 
   container_name = "ecs_demo_task"
 

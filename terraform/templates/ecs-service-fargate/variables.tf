@@ -7,23 +7,23 @@ variable "region" {
 }
 
 variable "ecs_cluster_name" {
-  description = "NEO service cluster name"
+  description = "ECS service cluster name"
 }
 
 variable "ecs_cluster_id" {
-  description = "NEO service cluster id"
+  description = "ECS service cluster id"
 }
 
-variable "container_definiton_json_file" {
-  description = "NEO service container definiton json filename"
+variable "container_image" {
+  description = "Container registry with Docker image."
 }
 
 variable "container_port" {
-  description = "NEO service container port"
+  description = "service container port"
 }
 
 variable "container_name" {
-  description = "NEO service container name"
+  description = "service container name"
 }
 
 variable "vpc_id" {
@@ -54,10 +54,6 @@ variable "https_listener_arn" {
 variable "http_listener_arn" {
   description = "Application loadbalancer ARN. Useful for passing to cloudwatch Metric dimension."
 }
-/*
-variable "aws_zone_id" {
-  description = "AWS zone where the DNS route 53 record will be added."
-}*/
 
 variable "alb_fqdn" {
   description = "Application loadbalancer fully qualified domain name."
@@ -78,3 +74,30 @@ variable "ecs_execution_role_arn" {
 variable "ecs_cluster_log_group_name" {
   description = "ECS cluster log group name for fargate tasks"
 }
+
+variable "task_desired_count" {
+  description = "Initial desired count for service tasks"
+  default = 1
+}
+
+variable "task_min_count" {
+  description = "Minimum task count for service  autoscaling"
+  default = 1
+}
+
+variable "task_max_count" {
+  description = "Minimum task count for service autoscaling"
+  default = 5
+}
+
+variable "cpu_reservation" {
+  description = "CPU reservation for container instance."
+  default = 256
+}
+
+variable "memory_reservation" {
+  description = "Memory reservation for container instance."
+  default = 512
+}
+
+

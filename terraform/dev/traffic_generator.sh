@@ -5,8 +5,8 @@ i=1
 
 while sleep $const; do
 
- echo "$i: " 
- curl "http://$2" &
+ echo "$i:" 
+ curl $2 &
  i=$((i+1))
 
 done

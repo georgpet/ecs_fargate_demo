@@ -3,8 +3,13 @@ resource "aws_ecs_cluster" "ecs-cluster" {
     name = "${var.ecs_cluster_name}"
 }
 
+resource "aws_cloudwatch_log_group" "cluster_log_group" {
+  name = "${var.ecs_cluster_name}-log-group"
+  retention_in_days = 60
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
-  name               = "ecs_task_execution_role"
+  name               = "${var.ecs_cluster_name}_ecs_task_execution_role"
 
   assume_role_policy = <<EOF
 {
@@ -24,13 +29,9 @@ resource "aws_iam_role" "ecs_execution_role" {
   EOF
 }
 
-resource "aws_cloudwatch_log_group" "cluster_log_group" {
-  name = "${var.ecs_cluster_name}-log-group"
-  retention_in_days = 60
-}
 
 resource "aws_iam_role_policy" "ecs_execution_role_policy" {
-  name   = "ecs_execution_role_policy"
+  name   = "${var.ecs_cluster_name}_ecs_execution_role_policy"
   role   = "${aws_iam_role.ecs_execution_role.id}"
 
   policy = <<EOF
@@ -63,13 +64,6 @@ resource "aws_security_group" "ecs-cluster_sg" {
   ingress {
     from_port = 80
     to_port = 80
-    protocol = "tcp"
-    security_groups  = ["${var.public_alb_sg}"]
-  }
-
-  ingress {
-    from_port = 9080
-    to_port = 9080
     protocol = "tcp"
     security_groups  = ["${var.public_alb_sg}"]
   }
