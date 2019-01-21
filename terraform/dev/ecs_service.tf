@@ -1,14 +1,14 @@
-output "ecs-service-1-HTTP-URL" {
-  value = "http://${module.service-1.ecs-service-URL}"
+output "ecs-service-1st-HTTP-URL" {
+  value = "http://${module.service-1st.ecs-service-URL}"
 }
-output "ecs-service-1-HTTPS-URL" {
-  value = "https://${module.service-1.ecs-service-URL}"
+output "ecs-service-1st-HTTPS-URL" {
+  value = "https://${module.service-1st.ecs-service-URL}"
 }
 
-module "service-1" {
+module "service-1st" {
   source = "../templates/ecs-service-fargate"
 
-  service_name = "demo-service-1"
+  service_name = "demo-service-1st"
 
   ecs_cluster_name = "${module.ecs_cluster.ecs_cluster_name}"
   
@@ -36,7 +36,6 @@ module "service-1" {
 
   http_listener_arn = "${module.alb-public.this_alb_http_listener_arns}"
 
-  #aws_zone_id = "${module.alb-public.this_alb_zone_id}"
   route53_zone_name = "${var.route53_zone_name}"
 
   alb_fqdn = "${module.alb-public.full_url}"
