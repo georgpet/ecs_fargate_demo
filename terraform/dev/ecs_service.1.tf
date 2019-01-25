@@ -20,6 +20,10 @@ module "service-1st" {
 
   container_name = "ecs_demo_task"
 
+  high_count_threshold = "100"
+
+  low_count_threshold = "50"
+
   vpc_id = "${module.vpc.vpc_id}"
 
   container_port = "80"

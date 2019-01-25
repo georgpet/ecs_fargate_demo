@@ -100,4 +100,12 @@ variable "memory_reservation" {
   default = 512
 }
 
+variable "high_count_threshold" {
+  description = "Number of request per minute per target to scale up."
+  default = 100
+}
 
+variable "low_count_threshold" {
+  description = "Number of request per minute per target to scale down."
+  default = 50
+}

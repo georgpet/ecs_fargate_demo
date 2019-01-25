@@ -167,7 +167,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs-service_high_count" {
   namespace           = "AWS/ApplicationELB"
   period              = "60"
   statistic           = "Sum"
-  threshold           = "100"
+  threshold           = "${var.high_count_threshold}"
 
   dimensions {
     TargetGroup = "${aws_alb_target_group.ecs-target-group.arn_suffix}"
@@ -189,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs-service_low_count" {
   namespace           = "AWS/ApplicationELB"
   period              = "60"
   statistic           = "Sum"
-  threshold           = "50"
+  threshold           = "${var.low_count_threshold}"
 
   dimensions {
     TargetGroup = "${aws_alb_target_group.ecs-target-group.arn_suffix}"
