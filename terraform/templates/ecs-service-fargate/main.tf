@@ -99,12 +99,12 @@ resource "aws_alb_target_group" "ecs-target-group" {
     health_check {
         healthy_threshold   = "2"
         unhealthy_threshold = "2"
-        interval            = "10"
+        interval            = "5"
         matcher             = "200"
         path                = "/"
         port                = "traffic-port"
         protocol            = "HTTP"
-        timeout             = "5"
+        timeout             = "2"
     }
 
     tags {
@@ -227,7 +227,7 @@ resource "aws_appautoscaling_policy" "up" {
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
-    cooldown                = "90"
+    cooldown                = "30"
     metric_aggregation_type = "Average"
 
     step_adjustment {
@@ -249,7 +249,7 @@ resource "aws_appautoscaling_policy" "down" {
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
-    cooldown                = "90"
+    cooldown                = "30"
     metric_aggregation_type = "Average"
 
     step_adjustment {
@@ -308,6 +308,14 @@ resource "aws_cloudwatch_dashboard" "service_dashboard" {
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "eu-west-1",
+                "yAxis": {
+                    "left": {
+                        "min": 0
+                    },
+                    "right": {
+                        "min": 0
+                    }
+                },
                 "period": 300
             }
         },
@@ -324,6 +332,14 @@ resource "aws_cloudwatch_dashboard" "service_dashboard" {
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "eu-west-1",
+                "yAxis": {
+                    "left": {
+                        "min": 0
+                    },
+                    "right": {
+                        "min": 0
+                    }
+                },
                 "title": "Request count per target"
             }
         }
