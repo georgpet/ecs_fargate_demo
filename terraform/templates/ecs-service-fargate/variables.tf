@@ -92,7 +92,7 @@ variable "task_max_count" {
 
 variable "cpu_reservation" {
   description = "CPU reservation for container instance."
-  default = 256
+  default = 512
 }
 
 variable "memory_reservation" {
